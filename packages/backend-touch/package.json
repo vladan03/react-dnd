@@ -1,6 +1,6 @@
 {
-  "name": "react-dnd-touch-backend",
-  "version": "15.1.1",
+  "name": "@wladan/react-dnd-touch-backend",
+  "version": "15.1.6",
   "description": "Touch backend for react-dnd",
   "main": "dist/cjs/index.js",
   "types": "dist/types/index.d.ts",
@@ -11,10 +11,10 @@
   },
   "sideEffects": false,
   "license": "MIT",
-  "author": "Long Ho <holevietlong@gmail.com>",
+  "author": "Vladan Zlatar",
   "repository": {
     "type": "git",
-    "url": "https://github.com/react-dnd/react-dnd.git"
+    "url": "https://github.com/vladan03/react-dnd"
   },
   "scripts": {
     "clean": "shx rm -rf dist/",

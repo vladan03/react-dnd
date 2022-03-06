@@ -134,6 +134,7 @@ export class TouchBackendImpl implements Backend {
 			this.handleTopMoveStartCapture as any,
 			true,
 		)
+		this.addEventListener(root, 'move', this.handleDragOver)
 		this.addEventListener(root, 'move', this.handleTopMove as any)
 		this.addEventListener(root, 'move', this.handleTopMoveCapture, true)
 		this.addEventListener(
@@ -177,6 +178,7 @@ export class TouchBackendImpl implements Backend {
 			true,
 		)
 		this.removeEventListener(root, 'start', this.handleTopMoveStart as any)
+		this.removeEventListener(root, 'move', this.handleDragOver as any)
 		this.removeEventListener(root, 'move', this.handleTopMoveCapture, true)
 		this.removeEventListener(root, 'move', this.handleTopMove as any)
 		this.removeEventListener(
@@ -274,59 +276,53 @@ export class TouchBackendImpl implements Backend {
 			}
 		}
 
-		const handleMove = (e: MouseEvent | TouchEvent) => {
-			if (!this.document || !root || !this.monitor.isDragging()) {
-				return
-			}
-
-			let coords
-
-			/**
-			 * Grab the coordinates for the current mouse/touch position
-			 */
-			switch (e.type) {
-				case eventNames.mouse.move:
-					coords = {
-						x: (e as MouseEvent).clientX,
-						y: (e as MouseEvent).clientY,
-					}
-					break
-
-				case eventNames.touch.move:
-					coords = {
-						x: (e as TouchEvent).touches[0]?.clientX || 0,
-						y: (e as TouchEvent).touches[0]?.clientY || 0,
-					}
-					break
-			}
-
-			/**
-			 * Use the coordinates to grab the element the drag ended on.
-			 * If the element is the same as the target node (or any of it's children) then we have hit a drop target and can handle the move.
-			 */
-			const droppedOn =
-				coords != null
-					? this.document.elementFromPoint(coords.x, coords.y)
-					: undefined
-			const childMatch = droppedOn && node.contains(droppedOn)
-
-			if (droppedOn === node || childMatch) {
-				return this.handleMove(e, targetId)
-			}
-		}
-
-		/**
-		 * Attaching the event listener to the body so that touchmove will work while dragging over multiple target elements.
-		 */
-		this.addEventListener(this.document.body, 'move', handleMove as any)
 		this.targetNodes.set(targetId, node)
 
 		return (): void => {
 			if (this.document) {
 				this.targetNodes.delete(targetId)
-				this.removeEventListener(this.document.body, 'move', handleMove as any)
 			}
 		}
+	}
+
+	public handleDragOver = (e: MouseEvent | TouchEvent) => {
+		if (!this.monitor.isDragging() || !this.document) return
+
+		let coords
+
+		/**
+		 * Grab the coordinates for the current mouse/touch position
+		 */
+		switch (e.type) {
+			case eventNames.mouse.move:
+				coords = {
+					x: (e as MouseEvent).clientX,
+					y: (e as MouseEvent).clientY,
+				}
+				break
+
+			case eventNames.touch.move:
+				coords = {
+					x: (e as TouchEvent).touches[0]?.clientX || 0,
+					y: (e as TouchEvent).touches[0]?.clientY || 0,
+				}
+				break
+		}
+
+		if (!coords) return
+
+		const droppedOn = this.document.elementsFromPoint(coords.x, coords.y)
+
+		droppedOn.forEach((node) => {
+			if (!(node instanceof HTMLElement)) return
+
+			if (this.monitor.getItemType() === node.dataset['dropAccept']) {
+				const targetId = this._getDropTargetId(node)
+
+				if (targetId && typeof targetId === 'string')
+					this.handleMove(e, targetId)
+			}
+		})
 	}
 
 	private getSourceClientOffset = (sourceId: string): XYCoord | undefined => {
@@ -395,6 +391,8 @@ export class TouchBackendImpl implements Backend {
 	}
 
 	public handleTopMoveCapture = (): void => {
+		if (!this.monitor.isDragging()) return
+
 		this.dragOverTargetIds = []
 	}
 
@@ -486,6 +484,7 @@ export class TouchBackendImpl implements Backend {
 					dragOverTargetNodes,
 			  )
 			: this.document.elementsFromPoint(clientOffset.x, clientOffset.y)
+
 		// Extend list with parents that are not receiving elementsFromPoint events (size 0 elements and svg groups)
 		const elementsAtPointExtended: Element[] = []
 		for (const nodeId in elementsAtPoint) {
@@ -507,6 +506,7 @@ export class TouchBackendImpl implements Backend {
 				}
 			}
 		}
+
 		const orderedDragOverTargetIds: string[] = elementsAtPointExtended
 			// Filter off nodes that arent a hovered DropTargets nodes
 			.filter((node) => dragOverTargetNodes.indexOf(node as HTMLElement) > -1)

@@ -75,6 +75,7 @@
     "@types/testing-library__jest-dom": "^5.14.1",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
+    "@wladan/react-dnd-touch-backend": "workspace:packages/backend-touch",
     "alex": "^9.1.0",
     "conventional-changelog-cli": "^2.1.1",
     "dnd-core": "workspace:packages/dnd-core",
@@ -97,7 +98,6 @@
     "react-dnd-html5-backend": "workspace:packages/backend-html5",
     "react-dnd-test-backend": "workspace:packages/backend-test",
     "react-dnd-test-utils": "workspace:packages/test-utils",
-    "react-dnd-touch-backend": "workspace:packages/backend-touch",
     "typescript": "^4.5.5"
   },
   "resolutions": {

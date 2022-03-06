@@ -5,7 +5,10 @@ import { FC, memo, useMemo, useCallback, useState, ReactNode } from 'react'
 import { Helmet } from 'react-helmet'
 import styled from 'styled-components'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { TouchBackend, TouchBackendOptions } from 'react-dnd-touch-backend'
+import {
+	TouchBackend,
+	TouchBackendOptions,
+} from '@wladan/react-dnd-touch-backend'
 import { isDebugMode } from '../util/isDebugMode'
 import { isTouchBackend } from '../util/isTouchBackend'
 import { DndProvider } from 'react-dnd'
