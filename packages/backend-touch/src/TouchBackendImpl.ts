@@ -313,10 +313,16 @@ export class TouchBackendImpl implements Backend {
 
 		const droppedOn = this.document.elementsFromPoint(coords.x, coords.y)
 
+		const itemType = this.monitor.getItemType()
+		if (typeof itemType !== 'string') return
+
 		droppedOn.forEach((node) => {
 			if (!(node instanceof HTMLElement)) return
 
-			if (this.monitor.getItemType() === node.dataset['dropAccept']) {
+			const dataDropAccept = node.dataset['dropAccept']
+			if (!dataDropAccept) return
+
+			if (dataDropAccept.includes(itemType)) {
 				const targetId = this._getDropTargetId(node)
 
 				if (targetId && typeof targetId === 'string')
